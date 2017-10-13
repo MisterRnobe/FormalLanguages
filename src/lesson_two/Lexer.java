@@ -1,19 +1,20 @@
 package lesson_two;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+
+import lesson_two.Token.TokenType;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-class Lexer {
+public class Lexer {
     private final String str;
     private int index = 0;
 
-    Lexer(String str)
+    public Lexer(String str)
     {
         this.str = str;
     }
-    Token nextToken()//May return null
+    public Token nextToken()
     {
         while (true)
         {
@@ -25,18 +26,28 @@ class Lexer {
                 return t;
         }
     }
-    private Token matchAnyToken()
+    public List<Token> getAllTokens()
+    {
+        List<Token> list = new LinkedList<>();
+        Token t;
+        while ((t = nextToken()) != null)
+        {
+            list.add(t);
+        }
+        return list;
+    }
+    private Token matchAnyToken() throws ParseException
     {
         if (index >= str.length())
             return null;
         Token token;
         if ((token = matchSpace()) != null)
             return token;
-        if ((token = matchAnySymbol())!= null)
+        if ((token = matchNumber())!= null)
             return token;
-        if ((token = matchNumber()) != null)
+        if ((token = matchAnySymbol()) != null)
             return token;
-        return null;
+        throw new ParseException("Symbol not found in " + (index+1)+" position!");
     }
     private int match(Pattern pattern)
     {
@@ -46,39 +57,26 @@ class Lexer {
     }
     private Token matchNumber()
     {
-        Pattern p = Pattern.compile("[0-9]+");
+        Pattern p = Pattern.compile("\\d+[.]?\\d*");
         int matched = match(p);
         return matched<0? null: new Token(Token.TokenType.NUMBER, str.substring(index, matched), index, matched);
     }
-    private Token matchPlus()
-    {
-        Pattern p = Pattern.compile(Pattern.quote("+"));
-        int matched = match(p);
-        return matched<0? null: new Token(Token.TokenType.PLUS, str.substring(index,matched),index,matched);
-    }
 
-    private final Map<String, Token.TokenType> SYMBOL_MAP = new TreeMap<>();
+    private LinkedList<TokenType> SYMBOLS = new LinkedList<>();
     {
-        SYMBOL_MAP.put("+", Token.TokenType.PLUS);
-        SYMBOL_MAP.put("-", Token.TokenType.MINUS);
-        SYMBOL_MAP.put("*", Token.TokenType.MUL);
-        SYMBOL_MAP.put("/", Token.TokenType.DIV);
-        SYMBOL_MAP.put("(", Token.TokenType.LPAR);
-        SYMBOL_MAP.put(")", Token.TokenType.RPAR);
+        SYMBOLS = new LinkedList<>(Arrays.asList(TokenType.values()));
+
     }
 
     private Token matchAnySymbol()
     {
-        for(Map.Entry<String, Token.TokenType> entry: SYMBOL_MAP.entrySet())
+        for(TokenType t: SYMBOLS)
         {
-            String key = entry.getKey();
-            Token.TokenType value = entry.getValue();
-            Pattern symbolPattern = Pattern.compile(Pattern.quote(key));
-            int matched = match(symbolPattern);
+            int matched = match(t.pattern());
             if (matched< 0)
                 continue;
             String symbolText = str.substring(index, matched);
-            return new Token(value, symbolText, index, matched);
+            return new Token(t, symbolText, index, matched);
         }
         return null;
     }
