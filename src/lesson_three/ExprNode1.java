@@ -36,7 +36,7 @@ public class ExprNode1
     public double compute()
     {
         if (isNumber)
-            return (double) Integer.parseInt(number.text);
+            return Double.parseDouble(number.text);
         else
             return operation.type.compute(left.compute(), isUnary? 0: right.compute());
     }

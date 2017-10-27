@@ -6,6 +6,9 @@ import lesson_two.ParseException;
 import lesson_two.Token;
 import lesson_two.Token.TokenType;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 
 /**
@@ -50,6 +53,7 @@ public class Parser5 {
      * Сообщение об ошибке с указанием текущей позиции в тексте.
      *
      * @param message текст сообщения
+     *
      */
     private void error(String message) throws ParseException {
         // Позиция ошибки в тексте
@@ -83,7 +87,7 @@ public class Parser5 {
         ExprNode1 leftNode = matchFactor();
         //Пока есть * или /
         while (true) {
-            Token op = matchAny(Token.TokenType.DIV, Token.TokenType.MUL);
+            Token op = matchAny(Token.TokenType.DIV, Token.TokenType.MUL, TokenType.POW);
             if (op != null) {
                 // Требуем после * или / снова множитель:
                 ExprNode1 rightNode = matchFactor();
@@ -95,7 +99,7 @@ public class Parser5 {
         }
         return leftNode;
     }
-    private ExprNode1 mathNumberOrExpression() throws ParseException
+    private ExprNode1 matchNumberOrExpression() throws ParseException
     {
         Token number = match(Token.TokenType.NUMBER);
         if (number != null) {
@@ -158,15 +162,6 @@ public class Parser5 {
     }
 
     /**
-     *
-     * @return
-     */
-    public ExprNode1 matchUnary() throws ParseException
-    {
-        return mathNumberOrExpression();
-    }
-
-    /**
      * Множитель = Число|'('выражение')'
      * @return дерево разбора выражений
      * @throws ParseException ошибка разбора
@@ -174,29 +169,34 @@ public class Parser5 {
 
     public ExprNode1 matchFactor() throws ParseException
     {
-        Token t = match(TokenType.LN);
+        Token t = matchAny(TokenType.LN, TokenType.COS, TokenType.SIN,TokenType.EXP, TokenType.NEG);
+
         if (t != null)
         {
-            return new ExprNode1(mathNumberOrExpression(), t);
+            return new ExprNode1(matchNumberOrExpression(), t);
         }
         else
-            return mathNumberOrExpression();
+            return matchNumberOrExpression();
 
     }
     /**
      * Проверка грамматического разбора выражения
      */
-    public static void main(String[] args) throws ParseException {
-        String expression = "LN(2*LN(2)) - 2";
+    public static void main(String[] args) throws ParseException, IOException {
+        String expression;
+        expression = new BufferedReader(new InputStreamReader(System.in)).readLine();//"LN(2*LN(2)) - 2";
         Lexer lexer = new Lexer(expression);
         List<Token> allTokens = lexer.getAllTokens();
-        Parser5 parser = new Parser5(allTokens);
         for (Token t: allTokens) {
-            System.out.println(t.type+" "+t.text);
+            System.out.println(t.type+" -> "+t.text);
         }
+        Parser5 parser = new Parser5(allTokens);
         ExprNode1 exprTreeRoot = parser.matchExpression();
+
         System.out.println(exprTreeRoot.toString()+" = "+exprTreeRoot.compute());
         System.out.println(exprTreeRoot.toString());
 
     }
 }
+// 2--3 -> MIN, NEG
+// 2---4 -> MIN, NEG, NEG
