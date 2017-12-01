@@ -1,5 +1,6 @@
 package main.language.nodes;
 
+import main.language.Runner;
 import org.antlr.v4.runtime.Token;
 
 public class NumberNode extends ExpressionNode {
@@ -9,7 +10,7 @@ public class NumberNode extends ExpressionNode {
         super(t);
     }
     @Override
-    public double eval() {
+    public double eval(Runner.MyMap map) {
         return Double.valueOf(t.getText());
     }
 

@@ -1,5 +1,6 @@
 package main.language.nodes;
 
+import main.language.Runner;
 import org.antlr.v4.runtime.Token;
 
 public class BinaryOperationNode extends ExpressionNode{
@@ -12,8 +13,8 @@ public class BinaryOperationNode extends ExpressionNode{
     }
 
     @Override
-    public double eval() {
-        return get(left.eval(), right.eval());
+    public double eval(Runner.MyMap map) {
+        return get(left.eval(map), right.eval(map));
     }
 
     @Override

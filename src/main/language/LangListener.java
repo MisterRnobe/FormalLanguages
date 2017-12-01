@@ -8,6 +8,16 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
  */
 public interface LangListener extends ParseTreeListener {
 	/**
+	 * Enter a parse tree produced by {@link LangParser#vars}.
+	 * @param ctx the parse tree
+	 */
+	void enterVars(LangParser.VarsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangParser#vars}.
+	 * @param ctx the parse tree
+	 */
+	void exitVars(LangParser.VarsContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link LangParser#function}.
 	 * @param ctx the parse tree
 	 */
@@ -17,6 +27,16 @@ public interface LangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitFunction(LangParser.FunctionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangParser#func_call}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunc_call(LangParser.Func_callContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangParser#func_call}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunc_call(LangParser.Func_callContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link LangParser#expr}.
 	 * @param ctx the parse tree

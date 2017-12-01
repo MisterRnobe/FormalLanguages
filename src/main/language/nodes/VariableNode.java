@@ -9,9 +9,10 @@ public class VariableNode extends ExpressionNode{
     }
 
     @Override
-    public double eval() {
-        Double value = Runner.get(getName());
+    public double eval(Runner.MyMap map) {
+        Double value = map.get(getName());
         if (value == null)
+            if ((value = Runner.getVar(getName())) == null)
             throw new RuntimeException("Variable "+getName()+" was not declared!");
         return value;
     }

@@ -1,13 +1,15 @@
 package main.language.nodes;
 
-public class StatementNode {
-    private AssignmentNode node;
+import main.language.Runner;
 
-    public StatementNode(AssignmentNode node) {
+public class StatementNode {
+    private ExpressionNode node;
+
+    public StatementNode(ExpressionNode node) {
         this.node = node;
     }
-    public void compute()
+    public void compute(Runner.MyMap map)
     {
-        node.eval();
+        node.eval(map);
     }
 }

@@ -1,5 +1,6 @@
 package main.language.nodes;
 
+import main.language.Runner;
 import org.antlr.v4.runtime.Token;
 
 public class UnaryOperationNode extends ExpressionNode{
@@ -11,9 +12,9 @@ public class UnaryOperationNode extends ExpressionNode{
     }
 
     @Override
-    public double eval() {
+    public double eval(Runner.MyMap map) {
         if (t.getText().equals("-"))
-            return -node.eval();
+            return -node.eval(map);
         throw new RuntimeException("Unexpected symbol: "+t.getText()+" at "+t.getLine());
     }
 

@@ -13,10 +13,10 @@ public class AssignmentNode extends ExpressionNode {
     }
 
     @Override
-    public double eval() {
-        double value = expressionNode.eval();
-        Runner.insert(variableNode.getName(), value);
-        return expressionNode.eval();
+    public double eval(Runner.MyMap map) {
+        double value = expressionNode.eval(map);
+        map.update(variableNode.getName(), value);
+        return expressionNode.eval(map);
     }
 
     @Override
