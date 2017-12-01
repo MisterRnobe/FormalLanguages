@@ -4,9 +4,9 @@ import org.antlr.v4.runtime.Token;
 
 public class NumberNode extends ExpressionNode {
 
-    NumberNode(Token t)
+    public NumberNode(Token t)
     {
-        this.t = t;
+        super(t);
     }
     @Override
     public double eval() {

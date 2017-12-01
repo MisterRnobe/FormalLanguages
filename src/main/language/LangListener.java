@@ -8,6 +8,16 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
  */
 public interface LangListener extends ParseTreeListener {
 	/**
+	 * Enter a parse tree produced by {@link LangParser#function}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunction(LangParser.FunctionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangParser#function}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunction(LangParser.FunctionContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link LangParser#expr}.
 	 * @param ctx the parse tree
 	 */
@@ -37,4 +47,34 @@ public interface LangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitMul(LangParser.MulContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangParser#assignment}.
+	 * @param ctx the parse tree
+	 */
+	void enterAssignment(LangParser.AssignmentContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangParser#assignment}.
+	 * @param ctx the parse tree
+	 */
+	void exitAssignment(LangParser.AssignmentContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterStatement(LangParser.StatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitStatement(LangParser.StatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangParser#program}.
+	 * @param ctx the parse tree
+	 */
+	void enterProgram(LangParser.ProgramContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangParser#program}.
+	 * @param ctx the parse tree
+	 */
+	void exitProgram(LangParser.ProgramContext ctx);
 }

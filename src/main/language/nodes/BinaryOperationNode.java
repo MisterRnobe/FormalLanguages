@@ -6,9 +6,9 @@ public class BinaryOperationNode extends ExpressionNode{
     private final ExpressionNode left,right;
 
     public BinaryOperationNode(ExpressionNode left, Token t, ExpressionNode right) {
+        super(t);
         this.left = left;
         this.right = right;
-        this.t = t;
     }
 
     @Override
