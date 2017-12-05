@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 public class FunctionNode extends ExpressionNode{
     private Function function;
     private List<ExpressionNode> arguments;
@@ -18,8 +20,9 @@ public class FunctionNode extends ExpressionNode{
 
 
     @Override
-    public double eval(Runner.MyMap map) {//CHECK
-        return function.executeFor(arguments);
+    public double eval(Runner.MyMap map)
+    {
+        return function.executeFor(arguments.stream().map(node-> node.eval(map)).collect(toList()));
     }
 
     @Override

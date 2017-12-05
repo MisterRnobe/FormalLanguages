@@ -16,7 +16,7 @@ public class AssignmentNode extends ExpressionNode {
     public double eval(Runner.MyMap map) {
         double value = expressionNode.eval(map);
         map.update(variableNode.getName(), value);
-        return expressionNode.eval(map);
+        return value;
     }
 
     @Override

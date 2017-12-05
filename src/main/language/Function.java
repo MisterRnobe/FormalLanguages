@@ -9,7 +9,7 @@ import static main.language.Runner.MyMap;
 
 public class Function {
     private List<StatementNode> body;
-    private List<VariableNode> arguments;
+    protected List<VariableNode> arguments;
     private ExpressionNode result;
     private String name;
 
@@ -19,14 +19,17 @@ public class Function {
         this.result = result;
         this.name = name;
     }
-    public double executeFor(List<ExpressionNode> values)
+    public double executeFor(List<Double> values)
     {
         if (values.size() != arguments.size())
             throw new RuntimeException("Wrong arguments number");
         MyMap localVars = new MyMap();
         for (int i = 0; i < arguments.size(); i++) {
-            localVars.update(arguments.get(i).getName(), values.get(i).eval(localVars));
+            localVars.update(arguments.get(i).getName(), values.get(i));
         }
+//        for (int i = 0; i < arguments.size(); i++) {
+//            localVars.update(arguments.get(i).getName(), values.get(i).eval(localVars));
+//        }
         body.forEach(statementNode -> statementNode.compute(localVars));
         return result.eval(localVars);// TODO: 01.12.2017 Implement algorithm
     }
