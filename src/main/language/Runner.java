@@ -32,8 +32,13 @@ public class Runner {
         if (ctx.assign != null)
             return new StatementNode(visitAssignment(ctx.assignment()));
         else
-            return new StatementNode(visitFunc(ctx.func));
-
+        if (ctx.func != null)
+            return new StatementNode(visitFunctionCall(ctx.func));
+        else
+        if (ctx.ifbl!= null)
+            return visitCondition(ctx.ifbl);
+        else
+            return visitWhile(ctx.whbl);
     }
     private static AssignmentNode visitAssignment(LangParser.AssignmentContext ctx)
     {
@@ -41,13 +46,22 @@ public class Runner {
         System.out.println(n);
         return n;
     }
+    private static WhileNode visitWhile(LangParser.While_blockContext ctx)
+    {
+
+        return new WhileNode(visitCondition(ctx.cond), visitForList(ctx.st, Runner::visitStatement));
+    }
     private static void initFunctions()
     {
         addFunction(Functions.sin);
         addFunction(Functions.print);
         addFunction(Functions.pow);
     }
-    private static void visitFunction(LangParser.FunctionContext function)
+    private static ConditionNode visitCondition(LangParser.ConditionContext ctx)
+    {
+        return new ConditionNode(visitExpr(ctx.left), ctx.t, visitExpr(ctx.right));
+    }
+    private static void visitFunctionDeclaration(LangParser.FunctionContext function)
     {
         List<StatementNode> body = function.st.stream().map(Runner::visitStatement).collect(Collectors.toList());
         List<Token> list = new ArrayList<>();
@@ -72,7 +86,7 @@ public class Runner {
         ExpressionNode node;
         if (ctx.fun!=null)
         {
-            node = visitFunc(ctx.fun);
+            node = visitFunctionCall(ctx.fun);
         }
         else
         if (ctx.num != null)
@@ -92,7 +106,7 @@ public class Runner {
             node = new UnaryOperationNode(ctx.neg, node);
         return node;
     }
-    private static FunctionNode visitFunc(LangParser.Func_callContext f)
+    private static FunctionNode visitFunctionCall(LangParser.Func_callContext f)
     {
         List<LangParser.ExprContext> list = new ArrayList<>();
         list.add(f.e1);
@@ -109,9 +123,21 @@ public class Runner {
         }
         return left;
     }
+    private static ConditionBlockNode visitCondition(LangParser.If_blockContext context)
+    {
+        ConditionNode conditionNode = visitCondition(context.cond);
+        System.out.println(context.else_st.size());
+        List<StatementNode> elseBody = context.else_st == null? null: visitForList(context.else_st, Runner::visitStatement);
+        return new ConditionBlockNode(conditionNode, visitForList(context.if_st, Runner::visitStatement), elseBody);
+    }
     private static void compile(LangParser.StatementContext c)
     {
-        visitStatement(c).compute(variables);
+        visitStatement(c).execute(variables);
+    }
+
+    private static <T,E> List<E> visitForList(List<T> list, java.util.function.Function<T,E> function)
+    {
+        return list.stream().map(function).collect(Collectors.toList());
     }
 
     public static void run(String code)
@@ -120,7 +146,7 @@ public class Runner {
         LangParser p = new LangParser(new CommonTokenStream(lexer));
         LangParser.ProgramContext context = p.program();
         initFunctions();
-        context.f.forEach(Runner::visitFunction);
+        context.f.forEach(Runner::visitFunctionDeclaration);
         context.st.forEach(Runner::compile);
         variables.clear();
         functions.clear();
@@ -133,7 +159,7 @@ public class Runner {
         LangParser p = new LangParser(new CommonTokenStream(lexer));
         LangParser.ProgramContext context = p.program();
         System.out.println(context.st.size());
-        context.f.forEach(Runner::visitFunction);
+        context.f.forEach(Runner::visitFunctionDeclaration);
         context.st.forEach(Runner::compile);
         variables.forEach((k,v)->System.out.println(k+" = "+v));
 

@@ -44,7 +44,7 @@ public class Functions {
 
         @Override
         public double executeFor(List<Double> values) {
-            ApplicationController.getOut().println(values.stream().map(String::valueOf).
+            ApplicationController.getOutput().println(values.stream().map(String::valueOf).
             collect(Collectors.joining(" ")));
             return 0;
         }

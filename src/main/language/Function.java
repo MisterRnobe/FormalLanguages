@@ -30,7 +30,7 @@ public class Function {
 //        for (int i = 0; i < arguments.size(); i++) {
 //            localVars.update(arguments.get(i).getName(), values.get(i).eval(localVars));
 //        }
-        body.forEach(statementNode -> statementNode.compute(localVars));
+        body.forEach(statementNode -> statementNode.execute(localVars));
         return result.eval(localVars);// TODO: 01.12.2017 Implement algorithm
     }
 
