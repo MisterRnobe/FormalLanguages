@@ -1,6 +1,5 @@
 package main.language.nodes;
 
-import main.language.Runner;
 import main.language.misc.VariablesPool;
 import main.language.types.AbstractType;
 import org.antlr.v4.runtime.Token;

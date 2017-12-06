@@ -1,6 +1,5 @@
 package main.language.nodes;
 
-import main.language.Runner;
 import main.language.misc.VariablesPool;
 
 import java.util.List;

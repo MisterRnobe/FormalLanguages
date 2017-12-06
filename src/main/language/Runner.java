@@ -1,7 +1,7 @@
 package main.language;
 
 import main.language.functions.Functions;
-import main.language.functions.Sum;
+import main.language.functions.PrimitiveFunction;
 import main.language.misc.VariablesPool;
 import main.language.nodes.*;
 import org.antlr.v4.runtime.CharStreams;
@@ -77,8 +77,12 @@ public class Runner {
         ExpressionNode left = visitAdd(ctx.left);
         for (int i = 0; i < ctx.op.size(); i++) {
             ExpressionNode right = visitAdd(ctx.right.get(i));
-            if (ctx.op.get(i).getText().equals("+"))
-                left = new FunctionNode(Sum.sum, Arrays.asList(left, right));
+            String op = ctx.op.get(i).getText();
+            if (op.equals("+"))
+                left = new FunctionNode(PrimitiveFunction.sum, Arrays.asList(left, right));
+            else
+                if (op.equals("-"))
+                    left = new FunctionNode(PrimitiveFunction.sub, Arrays.asList(left,right));
             else
                 throw new RuntimeException("Unidentified symbol: "+ctx.op.get(i));
         }
@@ -123,8 +127,17 @@ public class Runner {
         ExpressionNode left = visitMul(ctx.left);
         for (int i = 0; i < ctx.op.size(); i++) {
             ExpressionNode right = visitMul(ctx.right.get(i));
-            throw new UnsupportedOperationException(); // TODO: 06.12.2017
-            //left = new BinaryOperationNode(left, ctx.op.get(i), right);
+            String op = ctx.op.get(i).getText();
+            if (op.equals("*"))
+                left = new FunctionNode(PrimitiveFunction.mul, Arrays.asList(left, right));
+            else
+            if (op.equals("/"))
+                left = new FunctionNode(PrimitiveFunction.div, Arrays.asList(left,right));
+            else
+            if (op.equals("%"))
+                left = new FunctionNode(PrimitiveFunction.mod, Arrays.asList(left,right));
+            else
+                throw new RuntimeException("Unidentified symbol: "+ctx.op.get(i));
         }
         return left;
     }
