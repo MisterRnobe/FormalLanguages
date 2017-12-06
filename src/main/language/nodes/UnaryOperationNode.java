@@ -1,6 +1,10 @@
 package main.language.nodes;
 
 import main.language.Runner;
+import main.language.misc.VariablesPool;
+import main.language.types.AbstractType;
+import main.language.types.DoubleType;
+import main.language.types.IntegerType;
 import org.antlr.v4.runtime.Token;
 
 public class UnaryOperationNode extends ExpressionNode{
@@ -11,10 +15,22 @@ public class UnaryOperationNode extends ExpressionNode{
         this.node = node;
     }
 
+
     @Override
-    public double eval(Runner.MyMap map) {
+    public AbstractType<?> eval(VariablesPool pool) {
         if (t.getText().equals("-"))
-            return -node.eval(map);
+        {
+            AbstractType<?> val = node.eval(pool);
+            switch (val.getType())
+            {
+                case DOUBLE:
+                    return new DoubleType(-(Double) val.getValue());
+                case INTEGER:
+                    return new IntegerType(-(Integer) val.getValue());
+                default:
+                    throw new RuntimeException("Unexpected type for operator '-' : "+val.getType());
+            }
+        }
         throw new RuntimeException("Unexpected symbol: "+t.getText()+" at "+t.getLine());
     }
 
@@ -22,4 +38,5 @@ public class UnaryOperationNode extends ExpressionNode{
     public String toString() {
         return t.getText()+"("+node.toString()+")";
     }
+
 }

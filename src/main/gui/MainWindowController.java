@@ -4,11 +4,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextFormatter;
 import javafx.stage.FileChooser;
 import main.language.Runner;
 
 import java.io.*;
 import java.util.Scanner;
+import java.util.function.UnaryOperator;
 
 public class MainWindowController {
     @FXML
@@ -17,18 +19,31 @@ public class MainWindowController {
     private Parent root;
     @FXML
     private TextArea log;
+    private int tabs = 0;
 
 
     @FXML
     private void run() {
         log.setText("");
         Runner.run(code.getText());
-        System.out.println(code.getText());
 
     }
 
     @FXML
     private void initialize() {
+//        UnaryOperator<TextFormatter.Change> operator = new UnaryOperator<TextFormatter.Change>() {
+//            @Override
+//            public TextFormatter.Change apply(TextFormatter.Change change) {
+//                if (change.isAdded())
+//                {
+//                    if (change.getText().equals("\n"))
+//                        change.setText("\n" + ((char)9));
+//                }
+//                System.out.println(change.getText()+"\n - "+change.getControlText());
+//                return change;
+//            }
+//        };
+//        code.setTextFormatter(new TextFormatter<Object>(operator));
     }
 
     public OutputStream getOutputStream()

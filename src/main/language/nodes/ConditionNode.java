@@ -1,6 +1,8 @@
 package main.language.nodes;
 
-import main.language.Runner;
+import main.language.misc.VariablesPool;
+import main.language.types.AbstractType;
+import main.language.types.IntegerType;
 import org.antlr.v4.runtime.Token;
 
 public class ConditionNode extends ExpressionNode {
@@ -14,26 +16,28 @@ public class ConditionNode extends ExpressionNode {
         this.right = right;
     }
     @Override
-    public double eval(Runner.MyMap nodes) {
-        return compare(nodes)? 1d: 0d;
+    public IntegerType eval(VariablesPool pool) {
+        return compare(pool)? new IntegerType(1): new IntegerType(0);
     }
 
     @Override
     public String toString() {
         return "(" +left.toString()+t.getText()+right.toString()+")";
     }
-    private boolean compare(Runner.MyMap nodes)
+
+
+    private boolean compare(VariablesPool pool)
     {
-        double leftValue = left.eval(nodes);
-        double rightValue = right.eval(nodes);
+        AbstractType<? extends Number> leftValue = (AbstractType<? extends Number>)left.eval(pool);
+        AbstractType<? extends Number> rightValue = (AbstractType<? extends Number>)right.eval(pool);
         if (t.getText().equals("=="))
             return leftValue == rightValue;
         else
             if (t.getText().equals("<"))
-                return leftValue < rightValue;
+                return leftValue.getValue().doubleValue() < rightValue.getValue().doubleValue();
         else
             if (t.getText().equals(">"))
-                return leftValue > rightValue;
+                return leftValue.getValue().doubleValue() > rightValue.getValue().doubleValue();
         throw new RuntimeException("Unexpected symbol: "+t.getText());
     }
 }

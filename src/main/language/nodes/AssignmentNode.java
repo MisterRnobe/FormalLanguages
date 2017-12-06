@@ -1,6 +1,7 @@
 package main.language.nodes;
 
-import main.language.Runner;
+import main.language.misc.VariablesPool;
+import main.language.types.AbstractType;
 import org.antlr.v4.runtime.Token;
 
 public class AssignmentNode extends ExpressionNode {
@@ -13,9 +14,9 @@ public class AssignmentNode extends ExpressionNode {
     }
 
     @Override
-    public double eval(Runner.MyMap map) {
-        double value = expressionNode.eval(map);
-        map.update(variableNode.getName(), value);
+    public AbstractType<?> eval(VariablesPool pool) {
+        AbstractType<?> value = expressionNode.eval(pool);
+        pool.update(variableNode.getName(), value);
         return value;
     }
 
@@ -23,5 +24,6 @@ public class AssignmentNode extends ExpressionNode {
     public String toString() {
         return variableNode.toString()+"="+expressionNode.toString();
     }
+
 
 }

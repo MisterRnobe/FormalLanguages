@@ -1,6 +1,6 @@
 package main.language.nodes;
 
-import main.language.Runner;
+import main.language.misc.VariablesPool;
 
 import java.util.List;
 
@@ -13,13 +13,13 @@ public class ConditionBlockNode extends StatementNode {
     }
 
     @Override
-    public void execute(Runner.MyMap map) {
+    public void execute(VariablesPool pool) {
         ConditionNode c = (ConditionNode) node;
-        if (c.eval(map) != 0)
-            ifBody.forEach(n-> n.execute(map));
+        if (c.eval(pool).getValue() != 0)
+            ifBody.forEach(n-> n.execute(pool));
         else
             if (elseBody != null) {
-                elseBody.forEach(n -> n.execute(map));
+                elseBody.forEach(n -> n.execute(pool));
                 //System.out.println(elseBody.size());
             }
     }

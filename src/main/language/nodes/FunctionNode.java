@@ -2,6 +2,8 @@ package main.language.nodes;
 
 import main.language.Function;
 import main.language.Runner;
+import main.language.misc.VariablesPool;
+import main.language.types.AbstractType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,15 +22,16 @@ public class FunctionNode extends ExpressionNode{
 
 
     @Override
-    public double eval(Runner.MyMap map)
+    public AbstractType<?> eval(VariablesPool pool)
     {
-        return function.executeFor(arguments.stream().map(node-> node.eval(map)).collect(toList()));
+        return function.executeFor(arguments.stream().map(node-> node.eval(pool)).collect(toList()));
     }
 
     @Override
     public String toString() {
         return function.getName()+"( "+arguments.stream().map(ExpressionNode::toString).collect(Collectors.joining(","))+" )";// TODO: 01.12.2017
     }
+
 
 
 }

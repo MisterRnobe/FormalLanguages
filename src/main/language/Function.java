@@ -1,11 +1,12 @@
 package main.language;
 
+import main.language.misc.VariablesPool;
 import main.language.nodes.ExpressionNode;
 import main.language.nodes.StatementNode;
 import main.language.nodes.VariableNode;
+import main.language.types.AbstractType;
 
 import java.util.List;
-import static main.language.Runner.MyMap;
 
 public class Function {
     private List<StatementNode> body;
@@ -19,11 +20,11 @@ public class Function {
         this.result = result;
         this.name = name;
     }
-    public double executeFor(List<Double> values)
+    public AbstractType<?> executeFor(List<AbstractType<?>> values)
     {
         if (values.size() != arguments.size())
             throw new RuntimeException("Wrong arguments number");
-        MyMap localVars = new MyMap();
+        VariablesPool localVars = new VariablesPool();
         for (int i = 0; i < arguments.size(); i++) {
             localVars.update(arguments.get(i).getName(), values.get(i));
         }

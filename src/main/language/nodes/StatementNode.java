@@ -1,6 +1,6 @@
 package main.language.nodes;
 
-import main.language.Runner;
+import main.language.misc.VariablesPool;
 
 public class StatementNode {
     protected ExpressionNode node;
@@ -8,8 +8,8 @@ public class StatementNode {
     public StatementNode(ExpressionNode node) {
         this.node = node;
     }
-    public void execute(Runner.MyMap map)
+    public void execute(VariablesPool pool)
     {
-        node.eval(map);
+        node.eval(pool);
     }
 }

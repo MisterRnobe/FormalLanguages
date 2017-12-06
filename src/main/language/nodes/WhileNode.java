@@ -1,6 +1,7 @@
 package main.language.nodes;
 
 import main.language.Runner;
+import main.language.misc.VariablesPool;
 
 import java.util.List;
 
@@ -12,9 +13,9 @@ public class WhileNode extends StatementNode {
     }
 
     @Override
-    public void execute(Runner.MyMap map) {
+    public void execute(VariablesPool pool) {
         ConditionNode node =(ConditionNode) this.node;
-        while (node.eval(map)!=0d)
-            subProgram.forEach(statementNode -> statementNode.execute(map));
+        while (node.eval(pool).getValue()!=0d)
+            subProgram.forEach(statementNode -> statementNode.execute(pool));
     }
 }

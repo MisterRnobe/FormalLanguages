@@ -6,6 +6,8 @@ import main.language.Runner;
 import main.language.nodes.ExpressionNode;
 import main.language.nodes.StatementNode;
 import main.language.nodes.VariableNode;
+import main.language.types.AbstractType;
+import main.language.types.DoubleType;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenSource;
@@ -28,11 +30,11 @@ public class Functions {
         }
 
         @Override
-        public double executeFor(List<Double> values) {
+        public AbstractType<?> executeFor(List<AbstractType<?>> values) {
             if (values.size()!= 1)
                 throw new RuntimeException("Wrong number of arguments!");
-            values.forEach(System.out::println);
-            return Math.sin(values.get(0));
+            AbstractType<? extends Number> var = (AbstractType<? extends Number>) values.get(0);
+             return new DoubleType(Math.sin(var.getValue().doubleValue()));
         }
     }
     static class Print extends Function
@@ -43,10 +45,10 @@ public class Functions {
         }
 
         @Override
-        public double executeFor(List<Double> values) {
+        public AbstractType<?> executeFor(List<AbstractType<?>> values) {
             ApplicationController.getOutput().println(values.stream().map(String::valueOf).
             collect(Collectors.joining(" ")));
-            return 0;
+            return new DoubleType(0d);
         }
     }
     static class Pow extends Function
@@ -56,10 +58,12 @@ public class Functions {
         }
 
         @Override
-        public double executeFor(List<Double> values) {
+        public AbstractType<?> executeFor(List<AbstractType<?>> values) {
             if (values.size() != 2)
                 throw new RuntimeException("Wrong number of arguments!");
-            return Math.pow(values.get(0), values.get(1));
+            AbstractType<? extends Number> var1 = (AbstractType<? extends Number>) values.get(0),
+                var2 = (AbstractType<? extends Number>) values.get(1);
+            return new DoubleType(Math.pow(var1.getValue().doubleValue(), var2.getValue().doubleValue()));
         }
     }
 }

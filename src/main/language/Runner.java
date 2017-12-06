@@ -1,6 +1,8 @@
 package main.language;
 
 import main.language.functions.Functions;
+import main.language.functions.Sum;
+import main.language.misc.VariablesPool;
 import main.language.nodes.*;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -9,8 +11,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Runner {
-    private static final MyMap variables =
-            new MyMap();
+    private static final VariablesPool variables =
+            new VariablesPool();
     private static final List<Function> functions =
             new LinkedList<>();
 
@@ -22,10 +24,6 @@ public class Runner {
     static Function getFunction(String name)
     {
         return functions.stream().filter(f -> f.getName().equals(name)).findFirst().orElse(null);
-    }
-    public static Double getVar(String var)
-    {
-        return variables.get(var);
     }
     private static StatementNode visitStatement(LangParser.StatementContext ctx)
     {
@@ -53,6 +51,9 @@ public class Runner {
     }
     private static void initFunctions()
     {
+
+        variables.clear();
+        functions.clear();
         addFunction(Functions.sin);
         addFunction(Functions.print);
         addFunction(Functions.pow);
@@ -76,7 +77,10 @@ public class Runner {
         ExpressionNode left = visitAdd(ctx.left);
         for (int i = 0; i < ctx.op.size(); i++) {
             ExpressionNode right = visitAdd(ctx.right.get(i));
-            left = new BinaryOperationNode(left, ctx.op.get(i), right);
+            if (ctx.op.get(i).getText().equals("+"))
+                left = new FunctionNode(Sum.sum, Arrays.asList(left, right));
+            else
+                throw new RuntimeException("Unidentified symbol: "+ctx.op.get(i));
         }
         return left;
 
@@ -119,7 +123,8 @@ public class Runner {
         ExpressionNode left = visitMul(ctx.left);
         for (int i = 0; i < ctx.op.size(); i++) {
             ExpressionNode right = visitMul(ctx.right.get(i));
-            left = new BinaryOperationNode(left, ctx.op.get(i), right);
+            throw new UnsupportedOperationException(); // TODO: 06.12.2017
+            //left = new BinaryOperationNode(left, ctx.op.get(i), right);
         }
         return left;
     }
@@ -146,33 +151,9 @@ public class Runner {
         LangParser p = new LangParser(new CommonTokenStream(lexer));
         LangParser.ProgramContext context = p.program();
         initFunctions();
-        context.f.forEach(Runner::visitFunctionDeclaration);
-        context.st.forEach(Runner::compile);
-        variables.clear();
-        functions.clear();
-    }
-    public static void main(String[] args) {
-        String test = "func cde(x): return x+1;"+
-                "func sum(a,b): return a+b;"+
-                "print(1,2); x := cde(12); y := sum(x,x); x:=2*x-y+1;";
-        LangLexer lexer = new LangLexer(CharStreams.fromString(test));
-        LangParser p = new LangParser(new CommonTokenStream(lexer));
-        LangParser.ProgramContext context = p.program();
         System.out.println(context.st.size());
+        context.st.forEach(st-> System.out.println(st.getText()));
         context.f.forEach(Runner::visitFunctionDeclaration);
         context.st.forEach(Runner::compile);
-        variables.forEach((k,v)->System.out.println(k+" = "+v));
-
-
-    }
-    public static class MyMap extends TreeMap<String, Double>
-    {
-        public void update(String var, Double val)
-        {
-            if (this.containsKey(var))
-                this.replace(var, val);
-            else
-                this.put(var, val);
-        }
     }
 }
