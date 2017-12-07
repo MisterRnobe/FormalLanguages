@@ -17,6 +17,11 @@ public class VariablesPool extends ArrayList<Node<String, AbstractType<?>>> {
         }
         this.add(new Node<>(name, value));
     }
+    public void set(int index, AbstractType<?> value)
+    {
+        Node<String, AbstractType<?>> node = get(index);
+        set(index, new Node<>(node.getKey(), value));
+     }
     public AbstractType<?> getByName(String name)
     {
         Optional<Node<String, AbstractType<?>>> node = stream().filter(n->n.getKey().equals(name)).findFirst();
@@ -24,5 +29,13 @@ public class VariablesPool extends ArrayList<Node<String, AbstractType<?>>> {
             return node.get().getValue();
         else
             throw new RuntimeException("Variable "+name+" was not found!");
+    }
+    public int getIndex(String name)
+    {
+        for (int i = 0; i < size(); i++) {
+            if (get(i).getKey().equals(name))
+                return i;
+        }
+        return -1;
     }
 }

@@ -1,6 +1,5 @@
 package main.language.nodes;
 
-import main.language.Runner;
 import main.language.misc.VariablesPool;
 import main.language.types.AbstractType;
 import main.language.types.DoubleType;
@@ -31,6 +30,15 @@ public class UnaryOperationNode extends ExpressionNode{
                     throw new RuntimeException("Unexpected type for operator '-' : "+val.getType());
             }
         }
+        else
+            if (t.getText().equals("*"))
+            {
+                AbstractType<?> val = node.eval(pool);
+                if (val.getType()!= AbstractType.Type.INTEGER)
+                    throw new RuntimeException("Unexpected type for operator '*': "+val.getValue());
+                IntegerType i = (IntegerType) val;
+                return pool.get(i.getValue()).getValue();
+            }
         throw new RuntimeException("Unexpected symbol: "+t.getText()+" at "+t.getLine());
     }
 

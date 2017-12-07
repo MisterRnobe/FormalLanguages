@@ -25,7 +25,13 @@ public class MainWindowController {
     @FXML
     private void run() {
         log.setText("");
-        Runner.run(code.getText());
+        try {
+            Runner.run(code.getText());
+        } catch (RuntimeException e)
+        {
+            log.setText(e.getMessage());
+        }
+
 
     }
 

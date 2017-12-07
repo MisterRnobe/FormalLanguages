@@ -40,7 +40,9 @@ public class Runner {
     }
     private static AssignmentNode visitAssignment(LangParser.AssignmentContext ctx)
     {
-        AssignmentNode n = new AssignmentNode(new VariableNode(ctx.var), ctx.op, visitExpr(ctx.ex));
+        AssignmentNode n = new AssignmentNode(
+                ctx.var != null? new VariableNode(ctx.var) : new PointerNode(visitExpr(ctx.e))
+                , ctx.op, visitExpr(ctx.ex));
         System.out.println(n);
         return n;
     }
@@ -57,6 +59,7 @@ public class Runner {
         addFunction(Functions.sin);
         addFunction(Functions.print);
         addFunction(Functions.pow);
+        addFunction(Functions.len);
     }
     private static ConditionNode visitCondition(LangParser.ConditionContext ctx)
     {
@@ -97,21 +100,21 @@ public class Runner {
             node = visitFunctionCall(ctx.fun);
         }
         else
-        if (ctx.num != null)
+        if (ctx.lit != null)
         {
-            node = new NumberNode(ctx.num);
+            node = new LiteralNode(ctx.lit);
         }
         else
         if (ctx.var!= null)
         {
-            node = new VariableNode(ctx.var);
+            node = new VariableNode(ctx.var, ctx.pointer != null);
         }
         else
         {
             node = visitExpr(ctx.expr());
         }
-        if (ctx.neg != null)
-            node = new UnaryOperationNode(ctx.neg, node);
+        if (ctx.op != null)
+            node = new UnaryOperationNode(ctx.op, node);
         return node;
     }
     private static FunctionNode visitFunctionCall(LangParser.Func_callContext f)
@@ -164,7 +167,7 @@ public class Runner {
         LangParser p = new LangParser(new CommonTokenStream(lexer));
         LangParser.ProgramContext context = p.program();
         initFunctions();
-        System.out.println(context.st.size());
+        //System.out.println(context.st.size());
         context.st.forEach(st-> System.out.println(st.getText()));
         context.f.forEach(Runner::visitFunctionDeclaration);
         context.st.forEach(Runner::compile);

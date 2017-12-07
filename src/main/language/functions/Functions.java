@@ -8,6 +8,7 @@ import main.language.nodes.StatementNode;
 import main.language.nodes.VariableNode;
 import main.language.types.AbstractType;
 import main.language.types.DoubleType;
+import main.language.types.IntegerType;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenSource;
@@ -21,6 +22,7 @@ public class Functions {
     public static final Function sin = new Sin();
     public static final Function print = new Print();
     public static final Function pow = new Pow();
+    public static final Function len = new Len();
     static class Sin extends Function
     {
 
@@ -46,9 +48,24 @@ public class Functions {
 
         @Override
         public AbstractType<?> executeFor(List<AbstractType<?>> values) {
-            ApplicationController.getOutput().println(values.stream().map(String::valueOf).
-            collect(Collectors.joining(" ")));
-            return new DoubleType(0d);
+            String s = values.stream().map(String::valueOf).
+                    collect(Collectors.joining(" "));
+            ApplicationController.getOutput().println(s);
+            return new IntegerType(s.length());
+        }
+    }
+    static class Len extends Function
+    {
+
+        public Len() {
+            super(null, null, null, "len");
+        }
+
+        @Override
+        public AbstractType<?> executeFor(List<AbstractType<?>> values) {
+            if (values.size()!= 1)
+                throw new RuntimeException("Wrong number of arguments!");
+            return new IntegerType(values.get(0).getValue().toString().length());
         }
     }
     static class Pow extends Function
