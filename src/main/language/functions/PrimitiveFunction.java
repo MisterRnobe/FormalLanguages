@@ -71,7 +71,7 @@ public class PrimitiveFunction extends Function {
     private PrimitiveFunction(String name, List<BiFunction<AbstractType<?>, AbstractType<?>, Boolean>> predicates,
                               List<BiFunction<AbstractType<?>, AbstractType<?>, AbstractType<?>>> actions)
     {
-        super(null, null, null, name);
+        super(null,  null, name);
         if (predicates.size()!= actions.size())
             throw new RuntimeException("Number of predicates is not equal to number of actions!");
         map  = new HashMap<>();
@@ -93,7 +93,7 @@ public class PrimitiveFunction extends Function {
 
     private PrimitiveFunction(String name, BiFunction<Integer, Integer, Integer> ints,
                              BiFunction<Number,Number, Double> doubles) {
-        super(null, null, null, name);
+        super(null,  null, name);
         this.ints = ints;
         this.doubles = doubles;
     }

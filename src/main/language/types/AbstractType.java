@@ -18,6 +18,6 @@ public abstract class AbstractType<V> implements Cloneable {
 
     public enum Type
     {
-        INTEGER, DOUBLE, STRING
+        INTEGER, DOUBLE, STRING, VOID
     }
 }

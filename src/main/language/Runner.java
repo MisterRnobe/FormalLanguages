@@ -36,7 +36,10 @@ public class Runner {
         if (ctx.ifbl!= null)
             return visitCondition(ctx.ifbl);
         else
+        if (ctx.whbl!= null)
             return visitWhile(ctx.whbl);
+        else
+            return visitReturn(ctx.s_o);
     }
     private static AssignmentNode visitAssignment(LangParser.AssignmentContext ctx)
     {
@@ -72,7 +75,7 @@ public class Runner {
         list.add(function.v.var1);
         list.addAll(function.v.var);
         addFunction(new Function(body,list.stream().map(VariableNode::new).collect(Collectors.toList()),
-                visitExpr(function.ret), function.name.getText()));
+                function.name.getText()));
     }
 
     private static ExpressionNode visitExpr(LangParser.ExprContext ctx)
@@ -91,6 +94,10 @@ public class Runner {
         }
         return left;
 
+    }
+    private static ReturnNode visitReturn(LangParser.Spec_operatorContext ctx)
+    {
+        return new ReturnNode(ctx.e == null? null: visitExpr(ctx.e));
     }
     private static ExpressionNode visitMul(LangParser.MulContext ctx)
     {
@@ -160,7 +167,6 @@ public class Runner {
     {
         return list.stream().map(function).collect(Collectors.toList());
     }
-
     public static void run(String code)
     {
         LangLexer lexer = new LangLexer(CharStreams.fromString(code));

@@ -23,11 +23,13 @@ public class Functions {
     public static final Function print = new Print();
     public static final Function pow = new Pow();
     public static final Function len = new Len();
+    public static final Function allocate = new Allocate();
+
     static class Sin extends Function
     {
 
         private Sin() {
-            super(null, null, null, "sin");
+            super( null, null, "sin");
 
         }
 
@@ -43,7 +45,7 @@ public class Functions {
     {
 
         private Print() {
-            super(null, null, null, "print");
+            super( null, null, "print");
         }
 
         @Override
@@ -58,7 +60,7 @@ public class Functions {
     {
 
         public Len() {
-            super(null, null, null, "len");
+            super(null, null, "len");
         }
 
         @Override
@@ -71,7 +73,7 @@ public class Functions {
     static class Pow extends Function
     {
         private Pow() {
-            super(null, null, null, "pow");
+            super(null,  null, "pow");
         }
 
         @Override
@@ -81,6 +83,21 @@ public class Functions {
             AbstractType<? extends Number> var1 = (AbstractType<? extends Number>) values.get(0),
                 var2 = (AbstractType<? extends Number>) values.get(1);
             return new DoubleType(Math.pow(var1.getValue().doubleValue(), var2.getValue().doubleValue()));
+        }
+    }
+    static class Allocate extends Function
+    {
+        Allocate() {
+            super(null, null, "allocate");
+        }
+
+        @Override
+        public AbstractType<?> executeFor(List<AbstractType<?>> values) {
+            if (values.size()!= 1 | values.get(0).getType()!= AbstractType.Type.INTEGER)
+                throw new RuntimeException("Wrong argument(s)!");
+            int size = ((IntegerType)values.get(0)).getValue();
+
+            return super.executeFor(values);
         }
     }
 }

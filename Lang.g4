@@ -12,18 +12,20 @@ IF: 'if';
 ELSE: 'else';
 END: 'end';
 WHILE: 'while';
+RETURN: 'return';
 NAME:[A-Za-z][A-Za-z0-9]*;
 
 vars:var1=NAME?(','var+=NAME)*;
-function:FUNC_DEC(name=NAME)'('v=vars')'':'(st+=statement)*'return'(ret=expr)';';
+function:FUNC_DEC(name=NAME)'('v=vars')'':'(st+=statement)*END';';
 func_call:n=NAME'('e1=expr?(','exs+=expr)*')';
 condition: '('left=expr(t=('=='|'>'|'<'))right=expr')'':';
 if_block:IF(cond=condition)(if_st+=statement)+END(';'ELSE(else_st += statement)+END)?;
 while_block:WHILE(cond = condition)(st+=statement)+END;
+spec_operator:(ret=RETURN(e=expr)?);
 
 expr:left=add(op+=('+'|'-')right+=add)*;
 add:(left=mul)(op+=(MUL|DIV|MOD)right+=mul)*;
 mul:(op=('-'|'*'))?('('expr')'|fun=func_call|(pointer= '&')?var=NAME|lit = (STRING|NUMBER));
 assignment:(var=NAME | p = '*'e = expr)op=':='(ex=expr);
-statement:(assign = assignment|func = func_call|ifbl=if_block|whbl=while_block)';';
+statement:(assign = assignment|func = func_call|ifbl=if_block|whbl=while_block|s_o=spec_operator)';';
 program:(f+=function)*(st+=statement)+;

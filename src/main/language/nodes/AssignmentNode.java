@@ -17,7 +17,6 @@ public class AssignmentNode extends ExpressionNode {
     public AbstractType<?> eval(VariablesPool pool) {
         AbstractType<?> value = expressionNode.eval(pool);
         assignable.assign(pool, value);
-        //pool.update(assignable.getName(), value);
         return value;
     }
 

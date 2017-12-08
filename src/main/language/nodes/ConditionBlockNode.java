@@ -1,6 +1,9 @@
 package main.language.nodes;
 
+import main.language.errors.ReturnCallMessage;
 import main.language.misc.VariablesPool;
+import main.language.types.AbstractType;
+import main.language.types.VoidType;
 
 import java.util.List;
 
@@ -13,7 +16,7 @@ public class ConditionBlockNode extends StatementNode {
     }
 
     @Override
-    public void execute(VariablesPool pool) {
+    public AbstractType<?> execute(VariablesPool pool) throws ReturnCallMessage {
         ConditionNode c = (ConditionNode) node;
         if (c.eval(pool).getValue() != 0)
             ifBody.forEach(n-> n.execute(pool));
@@ -22,5 +25,6 @@ public class ConditionBlockNode extends StatementNode {
                 elseBody.forEach(n -> n.execute(pool));
                 //System.out.println(elseBody.size());
             }
+        return new VoidType();
     }
 }
