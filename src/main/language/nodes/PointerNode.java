@@ -1,19 +1,23 @@
 package main.language.nodes;
 
-import main.language.misc.VariablesPool;
+import main.language.mem.Memory;
+import main.language.nodes.interfaces.Assignable;
+import main.language.nodes.interfaces.ExpressionNode;
 import main.language.types.AbstractType;
 import main.language.types.IntegerType;
 
-public class PointerNode extends ExpressionNode implements Assignable {
+import java.util.Stack;
+
+public class PointerNode implements Assignable, ExpressionNode {
     private ExpressionNode node;
     public PointerNode(ExpressionNode node)
     {
         this.node = node;
     }
     @Override
-    public IntegerType eval(VariablesPool pool) {
+    public IntegerType eval(Stack<Memory> memoryStack) {
         IntegerType val;
-        AbstractType t =node.eval(pool);
+        AbstractType t = node.eval( memoryStack);
         try
         {
             val = (IntegerType) t;
@@ -31,10 +35,10 @@ public class PointerNode extends ExpressionNode implements Assignable {
     }
 
     @Override
-    public void assign(VariablesPool pool, AbstractType<?> value) {
-        int index = eval(pool).getValue();
+    public void assign(AbstractType<?> value, Stack<Memory> memoryStack) {
+        int index = eval(memoryStack).getValue();
         try{
-           pool.set(index, value);
+            Memory.getGlobalMemory().write(index, value);
         } catch (IndexOutOfBoundsException e)
         {
             throw new RuntimeException("Wrong pointer!");

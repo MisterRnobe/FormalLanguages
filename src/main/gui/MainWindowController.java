@@ -25,31 +25,32 @@ public class MainWindowController {
     @FXML
     private void run() {
         log.setText("");
-        try {
-            Runner.run(code.getText());
-        } catch (RuntimeException e)
-        {
-            log.setText(e.getMessage());
-        }
-
-
+        Runner.run(code.getText());
+    }
+    public String getCode()
+    {
+        return code.getText();
     }
 
     @FXML
     private void initialize() {
-//        UnaryOperator<TextFormatter.Change> operator = new UnaryOperator<TextFormatter.Change>() {
-//            @Override
-//            public TextFormatter.Change apply(TextFormatter.Change change) {
-//                if (change.isAdded())
-//                {
-//                    if (change.getText().equals("\n"))
-//                        change.setText("\n" + ((char)9));
+//        UnaryOperator<TextFormatter.Change> operator = change -> {
+//            if (change.isAdded())
+//            {
+//                if (change.getText().length() == 1 & change.getText().charAt(0) == 10) {
+//                    change.setText((char)10+"\t");
+//                    //change.setCaretPosition(change.getCaretPosition()+1);
+//                    code.positionCaret(change.getControlCaretPosition()+2);
+//                    change.setCaretPosition(change.getControlText().length());
+//                    //System.out.println(change.getCaretPosition());
 //                }
-//                System.out.println(change.getText()+"\n - "+change.getControlText());
-//                return change;
+//
+//                    //change.setText("\n\t");
 //            }
+//            //System.out.println((int)change.getText().charAt(0));
+//            return change;
 //        };
-//        code.setTextFormatter(new TextFormatter<Object>(operator));
+//        code.setTextFormatter(new TextFormatter<>(operator));
     }
 
     public OutputStream getOutputStream()
@@ -116,10 +117,17 @@ public class MainWindowController {
             }
         }
     }
+    public void setCode(String code)
+    {
+        this.code.setText(code);
+    }
 
-    static MainWindowController create() throws IOException {
+    static MainWindowController create(String code) throws IOException {
         FXMLLoader loader = new FXMLLoader(MainWindowController.class.getResource("MainWindow.fxml"));
         loader.load();
-        return loader.getController();
+        MainWindowController c = loader.getController();
+        if (code!=null)
+            c.setCode(code);
+        return c;
     }
 }

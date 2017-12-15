@@ -1,11 +1,14 @@
 package main.language.nodes;
 
-import main.language.misc.VariablesPool;
+import main.language.mem.Memory;
+import main.language.nodes.interfaces.ExpressionNode;
 import main.language.types.AbstractType;
 import main.language.types.IntegerType;
 import org.antlr.v4.runtime.Token;
 
-public class ConditionNode extends ExpressionNode {
+import java.util.Stack;
+
+public class ConditionNode implements ExpressionNode {
     private Token t;
     private ExpressionNode left;
     private ExpressionNode right;
@@ -15,9 +18,11 @@ public class ConditionNode extends ExpressionNode {
         this.t = t;
         this.right = right;
     }
+
     @Override
-    public IntegerType eval(VariablesPool pool) {
-        return compare(pool)? new IntegerType(1): new IntegerType(0);
+    public IntegerType eval(Stack<Memory> memoryStack) {
+        //return compare()? ;
+        return new IntegerType(compare(memoryStack)?1:0);
     }
 
     @Override
@@ -26,12 +31,17 @@ public class ConditionNode extends ExpressionNode {
     }
 
 
-    private boolean compare(VariablesPool pool)
+    private boolean compare(Stack<Memory> memoryStack)
     {
-        AbstractType<? extends Number> leftValue = (AbstractType<? extends Number>)left.eval(pool);
-        AbstractType<? extends Number> rightValue = (AbstractType<? extends Number>)right.eval(pool);
+        AbstractType<? extends Number> leftValue = (AbstractType<? extends Number>)left.eval(memoryStack);
+        AbstractType<? extends Number> rightValue = (AbstractType<? extends Number>)right.eval(memoryStack);
         if (t.getText().equals("=="))
-            return leftValue == rightValue;
+        {
+            System.out.println("Left value is "+leftValue+", right one is "+rightValue);
+            System.out.println("Result is "+(leftValue == rightValue));
+            return leftValue.getValue().doubleValue() == rightValue.getValue().doubleValue();
+        }
+
         else
             if (t.getText().equals("<"))
                 return leftValue.getValue().doubleValue() < rightValue.getValue().doubleValue();

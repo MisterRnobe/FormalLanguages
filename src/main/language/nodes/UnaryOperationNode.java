@@ -1,25 +1,29 @@
 package main.language.nodes;
 
-import main.language.misc.VariablesPool;
+import main.language.mem.Memory;
+import main.language.nodes.interfaces.ExpressionNode;
 import main.language.types.AbstractType;
 import main.language.types.DoubleType;
 import main.language.types.IntegerType;
 import org.antlr.v4.runtime.Token;
 
-public class UnaryOperationNode extends ExpressionNode{
+import java.util.Stack;
+
+public class UnaryOperationNode implements ExpressionNode {
     private ExpressionNode node;
-    public UnaryOperationNode(Token t, ExpressionNode node)
+    private Token token;
+    public UnaryOperationNode(Token token, ExpressionNode node)
     {
-        super(t);
+        this.token = token;
         this.node = node;
     }
 
 
     @Override
-    public AbstractType<?> eval(VariablesPool pool) {
-        if (t.getText().equals("-"))
+    public AbstractType<?> eval(Stack<Memory> memoryStack) {
+        if (token.getText().equals("-"))
         {
-            AbstractType<?> val = node.eval(pool);
+            AbstractType<?> val = node.eval(memoryStack);
             switch (val.getType())
             {
                 case DOUBLE:
@@ -31,20 +35,21 @@ public class UnaryOperationNode extends ExpressionNode{
             }
         }
         else
-            if (t.getText().equals("*"))
+            if (token.getText().equals("*"))
             {
-                AbstractType<?> val = node.eval(pool);
+                AbstractType<?> val = node.eval(memoryStack);
                 if (val.getType()!= AbstractType.Type.INTEGER)
                     throw new RuntimeException("Unexpected type for operator '*': "+val.getValue());
                 IntegerType i = (IntegerType) val;
-                return pool.get(i.getValue()).getValue();
+                return Memory.getGlobalMemory().getByAddress(i.getValue());
             }
-        throw new RuntimeException("Unexpected symbol: "+t.getText()+" at "+t.getLine());
+        throw new RuntimeException("Unexpected symbol: "+token.getText()+" at "+token.getLine());
     }
+
 
     @Override
     public String toString() {
-        return t.getText()+"("+node.toString()+")";
+        return token.getText()+"("+node.toString()+")";
     }
 
 }

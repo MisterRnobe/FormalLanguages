@@ -10,14 +10,25 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 
+import static main.language.types.AbstractType.Type.VOID;
+import static main.language.types.AbstractType.Type.INTEGER;
+import static main.language.types.AbstractType.Type.DOUBLE;
+import static main.language.types.AbstractType.Type.STRING;
+
 public class PrimitiveFunction extends Function {
-
-    public static final Function sub = new PrimitiveFunction("-", (i1,i2)-> i1-i2, (d1,d2)-> d1.doubleValue()-d2.doubleValue());
-    //public static final Function mul = new PrimitiveFunction("*", (i1,i2)-> i1*i2, (d1,d2)-> d1.doubleValue()*d2.doubleValue());
-    public static final Function div = new PrimitiveFunction("/", (i1,i2)-> i1/i2, (d1,d2)-> d1.doubleValue()/d2.doubleValue());
-    public static final Function mod = new PrimitiveFunction("%", (i1,i2)-> i1%i2, (d1,d2)-> {throw new RuntimeException("Operation '%' is supported only for integers!");});
-
     //public static final Function sum = new PrimitiveFunction("+", (i1,i2)-> i1+i2, (d1,d2)-> d1.doubleValue()+d2.doubleValue());
+    public static final Function sub = new PrimitiveFunction("-",
+            Arrays.asList(PrimitiveFunction::integers, PrimitiveFunction::integers),
+            Arrays.asList((t1,t2)-> computeIntegers(t1,t2, (i1,i2) -> i1 - i2),
+                    (t1,t2)-> computeDoubles(t1,t2, (d1,d2)-> d1 - d2)));
+
+    public static final Function div = new PrimitiveFunction("/",
+            Arrays.asList(PrimitiveFunction::integers, PrimitiveFunction::integers),
+            Arrays.asList((t1,t2)-> computeIntegers(t1,t2, (i1,i2) -> i1 / i2),
+                    (t1,t2)-> computeDoubles(t1,t2, (d1,d2)-> d1 / d2)));
+    public static final Function mod = new PrimitiveFunction("%",
+            Collections.singletonList(PrimitiveFunction::integers),
+            Collections.singletonList((t1, t2) -> computeIntegers(t1, t2, (i1, i2) -> i1 % i2)));
 
     public static final Function sum = new PrimitiveFunction("+",
             Arrays.asList(PrimitiveFunction::integers, PrimitiveFunction::strings, PrimitiveFunction::doubles)
@@ -37,15 +48,17 @@ public class PrimitiveFunction extends Function {
 
     private static boolean integers(AbstractType<?> type1, AbstractType<?> type2)
     {
-        return type1.getType() == AbstractType.Type.INTEGER && type2.getType() == AbstractType.Type.INTEGER;
+        return type1.getType() == INTEGER && type2.getType() == INTEGER;
     }
     private static boolean doubles(AbstractType<?> type1, AbstractType<?> type2)
     {
-        return type1.getType() == AbstractType.Type.DOUBLE || type2.getType() == AbstractType.Type.DOUBLE;
+        return type1.getType() == DOUBLE && type2.getType() == DOUBLE ||
+                type1.getType() == DOUBLE && type2.getType() == INTEGER ||
+                type1.getType() == INTEGER && type2.getType() == DOUBLE;
     }
     private static boolean strings(AbstractType<?> type1, AbstractType<?> type2)
     {
-        return type1.getType() == AbstractType.Type.STRING || type2.getType() == AbstractType.Type.STRING;
+        return type1.getType() == STRING || type2.getType() == STRING;
     }
     private static IntegerType computeIntegers(AbstractType<?> val1, AbstractType<?> val2, BinaryOperator<Integer> i)
     {
@@ -54,17 +67,11 @@ public class PrimitiveFunction extends Function {
     }
     private static DoubleType computeDoubles(AbstractType<?> val1, AbstractType<?> val2, BinaryOperator<Double> d)
     {
-
         AbstractType<? extends Number> v1 = (AbstractType<? extends Number>) val1, v2 = (AbstractType<? extends Number>) val2;
         return new DoubleType(d.apply(v1.getValue().doubleValue(), v2.getValue().doubleValue()));
     }
-    private static StringType computeString(AbstractType<?> val1, AbstractType<?> val2, BinaryOperator<String> s)
-    {
-        return new StringType(s.apply(val1.getValue().toString(), val2.getValue().toString()));
-    }
 
-    private BiFunction<Integer, Integer, Integer> ints;
-    private BiFunction<Number,Number, Double> doubles;
+    /*Non-static fields*/
     private Map<BiFunction<AbstractType<?>, AbstractType<?>, Boolean>,
             BiFunction<AbstractType<?>, AbstractType<?>, AbstractType<?>>> map;
 
@@ -74,7 +81,7 @@ public class PrimitiveFunction extends Function {
         super(null,  null, name);
         if (predicates.size()!= actions.size())
             throw new RuntimeException("Number of predicates is not equal to number of actions!");
-        map  = new HashMap<>();
+        map  = new LinkedHashMap<>();
         for (int i = 0; i < predicates.size(); i++) {
             map.put(predicates.get(i), actions.get(i));
         }
@@ -82,20 +89,16 @@ public class PrimitiveFunction extends Function {
     @Override
     public AbstractType<?> executeFor(List<AbstractType<?>> values)
     {
-        for (Map.Entry<BiFunction<AbstractType<?>, AbstractType<?>, Boolean>,
-                BiFunction<AbstractType<?>, AbstractType<?>, AbstractType<?>>> e: map.entrySet()) {
-            if (e.getKey().apply(values.get(0), values.get(1)))
-                return e.getValue().apply(values.get(0), values.get(1));
+        Optional<Map.Entry<BiFunction<AbstractType<?>, AbstractType<?>, Boolean>,
+                BiFunction<AbstractType<?>, AbstractType<?>, AbstractType<?>>>> o =
+                map.entrySet().stream().filter(e-> e.getKey().apply(values.get(0), values.get(1))).findFirst();
+        if (o.isPresent())
+        {
+            return o.get().getValue().apply(values.get(0), values.get(1));
         }
+        else
         throw new RuntimeException("Operation '"+getName()+"' is not supported between "+
                 values.get(0).getType()+" and "+values.get(1).getType());
-    }
-
-    private PrimitiveFunction(String name, BiFunction<Integer, Integer, Integer> ints,
-                             BiFunction<Number,Number, Double> doubles) {
-        super(null,  null, name);
-        this.ints = ints;
-        this.doubles = doubles;
     }
 
 }

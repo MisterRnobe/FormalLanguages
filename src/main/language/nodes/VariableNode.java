@@ -1,52 +1,76 @@
 package main.language.nodes;
 
-import main.language.misc.VariablesPool;
+import main.language.mem.Memory;
+import main.language.nodes.interfaces.Assignable;
+import main.language.nodes.interfaces.ExpressionNode;
 import main.language.types.AbstractType;
 import main.language.types.IntegerType;
 import org.antlr.v4.runtime.Token;
 
-public class VariableNode extends ExpressionNode implements Assignable{
+import java.util.Stack;
+
+public class VariableNode implements Assignable, ExpressionNode {
     private boolean hasPointer;
+    private Token token;
+
     public VariableNode(Token t)
     {
         this(t, false);
     }
-    public VariableNode(Token t, boolean hasPointer) {
-        super(t);
+    public VariableNode(Token token, boolean hasPointer) {
+        this.token = token;
         this.hasPointer = hasPointer;
     }
 
     @Override
-    public AbstractType<?> eval(VariablesPool pool) {
+    public AbstractType<?> eval(Stack<Memory> memoryStack) {
         if (hasPointer)
         {
-            int i = pool.getIndex(t.getText());
-            if (i == -1)
-                throw new RuntimeException("Variable "+t.getText()+" has not been found!");
+            Integer result = null;
+            for (int i = memoryStack.size() - 1; i >= 0; i--) {
+                if ((result = memoryStack.get(i).getAddress(token.getText())) != null)
+                    break;
+            }
+            if (result == null)
+                throw new RuntimeException("Variable "+token.getText()+" was not found!");
             else
-                return new IntegerType(i);
+                return new IntegerType(result);
         }
-        else {
-            AbstractType<?> type = pool.getByName(t.getText());
-            if (type == null)
-                throw new RuntimeException("Variable " + t.getText() + " has not been found!");
-            return type;
+        else
+        {
+            AbstractType<?> result = null;
+            for (int i = memoryStack.size() - 1; i >= 0; i--) {
+                if ((result = memoryStack.get(i).getValue(token.getText())) != null)
+                    break;
+            }
+            if (result == null)
+                throw new RuntimeException("Variable "+token.getText()+" was not found!");
+            else
+                return result;
         }
     }
 
+
     @Override
     public String toString() {
-        return t.getText();
+        return (hasPointer? "*": "")+token.getText();
     }
 
 
     public String getName()
     {
-        return t.getText();
+        return token.getText();
     }
 
     @Override
-    public void assign(VariablesPool pool, AbstractType<?> value) {
-        pool.update(t.getText(), value);
+    public void assign(AbstractType<?> value, Stack<Memory> memoryStack) {
+        for (int i = memoryStack.size() - 1; i >= 0; i--) {
+            if (memoryStack.get(i).getValue(token.getText()) != null) {
+                memoryStack.get(i).putValue(token.getText(), value);
+                return;
+            }
+        }
+        memoryStack.peek().putValue(token.getText(), value);
+        //Memory.getGlobalMemory().putValue(this.getName(), value);
     }
 }

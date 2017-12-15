@@ -1,105 +1,80 @@
 package main.language;
 
-import main.language.functions.Functions;
 import main.language.functions.PrimitiveFunction;
-import main.language.misc.VariablesPool;
+import main.language.mem.Memory;
 import main.language.nodes.*;
+import main.language.nodes.interfaces.ExpressionNode;
+import main.language.nodes.interfaces.Statementable;
+import main.language.nodes.special_operators.ReturnNode;
+import main.language.nodes.statements.AssignmentNode;
+import main.language.nodes.statements.ConditionBlockNode;
+import main.language.nodes.statements.StatementNode;
+import main.language.nodes.statements.WhileNode;
+import main.language.state.ReturnedState;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
-import java.util.*;
-import java.util.stream.Collectors;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Stack;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 public class Runner {
-    private static final VariablesPool variables =
-            new VariablesPool();
-    private static final List<Function> functions =
-            new LinkedList<>();
 
-    static void addFunction(Function f)
-    {
-        functions.add(f);// TODO: 01.12.2017 Edit
-    }
+    private List<Statementable> program;
 
-    static Function getFunction(String name)
+    private Statementable visitStatement(LangParser.StatementContext ctx)
     {
-        return functions.stream().filter(f -> f.getName().equals(name)).findFirst().orElse(null);
-    }
-    private static StatementNode visitStatement(LangParser.StatementContext ctx)
-    {
-        if (ctx.assign != null)
-            return new StatementNode(visitAssignment(ctx.assignment()));
+        Statementable s;
+        if (ctx.assign != null) {
+            LangParser.AssignmentContext a = ctx.assign;
+            s = new AssignmentNode(a.var != null ? new VariableNode(a.var) : new PointerNode(visitExpr(a.e)),
+                    visitExpr(a.ex));
+        }
         else
-        if (ctx.func != null)
-            return new StatementNode(visitFunctionCall(ctx.func));
+        if (ctx.func != null) {
+            s = new StatementNode(visitFunctionCall(ctx.func));
+        }
         else
-        if (ctx.ifbl!= null)
-            return visitCondition(ctx.ifbl);
+        if (ctx.ifbl!= null) {
+            s = visitConditionBlock(ctx.ifbl);
+        }
         else
-        if (ctx.whbl!= null)
-            return visitWhile(ctx.whbl);
+        if (ctx.whbl!= null) {
+            s = visitWhileBlock(ctx.whbl);
+            //s = visitWhile(ctx.whbl);
+        }
         else
-            return visitReturn(ctx.s_o);
+        {
+            s = new ReturnNode(ctx.s_o.e == null? null: visitExpr(ctx.s_o.e));
+        }
+        return s;
     }
-    private static AssignmentNode visitAssignment(LangParser.AssignmentContext ctx)
-    {
-        AssignmentNode n = new AssignmentNode(
-                ctx.var != null? new VariableNode(ctx.var) : new PointerNode(visitExpr(ctx.e))
-                , ctx.op, visitExpr(ctx.ex));
-        System.out.println(n);
-        return n;
-    }
-    private static WhileNode visitWhile(LangParser.While_blockContext ctx)
-    {
-
-        return new WhileNode(visitCondition(ctx.cond), visitForList(ctx.st, Runner::visitStatement));
-    }
-    private static void initFunctions()
-    {
-
-        variables.clear();
-        functions.clear();
-        addFunction(Functions.sin);
-        addFunction(Functions.print);
-        addFunction(Functions.pow);
-        addFunction(Functions.len);
-    }
-    private static ConditionNode visitCondition(LangParser.ConditionContext ctx)
-    {
-        return new ConditionNode(visitExpr(ctx.left), ctx.t, visitExpr(ctx.right));
-    }
-    private static void visitFunctionDeclaration(LangParser.FunctionContext function)
-    {
-        List<StatementNode> body = function.st.stream().map(Runner::visitStatement).collect(Collectors.toList());
-        List<Token> list = new ArrayList<>();
-        list.add(function.v.var1);
-        list.addAll(function.v.var);
-        addFunction(new Function(body,list.stream().map(VariableNode::new).collect(Collectors.toList()),
-                function.name.getText()));
-    }
-
-    private static ExpressionNode visitExpr(LangParser.ExprContext ctx)
+    private ExpressionNode visitExpr(LangParser.ExprContext ctx)
     {
         ExpressionNode left = visitAdd(ctx.left);
         for (int i = 0; i < ctx.op.size(); i++) {
             ExpressionNode right = visitAdd(ctx.right.get(i));
             String op = ctx.op.get(i).getText();
-            if (op.equals("+"))
-                left = new FunctionNode(PrimitiveFunction.sum, Arrays.asList(left, right));
-            else
-                if (op.equals("-"))
-                    left = new FunctionNode(PrimitiveFunction.sub, Arrays.asList(left,right));
-            else
-                throw new RuntimeException("Unidentified symbol: "+ctx.op.get(i));
+            switch (op) {
+                case "+":
+                    left = new FunctionNode(PrimitiveFunction.sum, Arrays.asList(left, right));
+                    break;
+                case "-":
+                    left = new FunctionNode(PrimitiveFunction.sub, Arrays.asList(left, right));
+                    break;
+                default:
+                    throw new RuntimeException("Unidentified symbol: " + ctx.op.get(i));
+            }
         }
         return left;
 
     }
-    private static ReturnNode visitReturn(LangParser.Spec_operatorContext ctx)
-    {
-        return new ReturnNode(ctx.e == null? null: visitExpr(ctx.e));
-    }
-    private static ExpressionNode visitMul(LangParser.MulContext ctx)
+    private ExpressionNode visitMul(LangParser.MulContext ctx)
     {
         ExpressionNode node;
         if (ctx.fun!=null)
@@ -124,58 +99,91 @@ public class Runner {
             node = new UnaryOperationNode(ctx.op, node);
         return node;
     }
-    private static FunctionNode visitFunctionCall(LangParser.Func_callContext f)
+    private FunctionNode visitFunctionCall(LangParser.Func_callContext f)
     {
-        List<LangParser.ExprContext> list = new ArrayList<>();
-        list.add(f.e1);
-        list.addAll(f.exs);
-        return new FunctionNode(getFunction(f.n.getText()),
-                list.stream().map(Runner::visitExpr).collect(Collectors.toList()));
+        List<ExpressionNode> list = new ArrayList<>();
+        if (f.e1 != null)
+        {
+            Stream<LangParser.ExprContext> s = Stream.of(f.e1);
+            if (f.exs!= null)
+                s = Stream.concat(s, f.exs.stream());
+            list = s.map(this::visitExpr).collect(toList());
+        }
+        return new FunctionNode(Memory.getGlobalMemory().getFunction(f.n.getText()),
+               list);
     }
-    private static ExpressionNode visitAdd(LangParser.AddContext ctx)
+    private ConditionBlockNode visitConditionBlock(LangParser.If_blockContext ctx)
+    {
+        return new ConditionBlockNode( visitCondition(ctx.cond), visitProgram(ctx.if_st),
+                ctx.else_st == null? null: visitProgram(ctx.else_st));
+    }
+    private WhileNode visitWhileBlock(LangParser.While_blockContext ctx)
+    {
+        return new WhileNode(visitProgram(ctx.st), visitCondition(ctx.cond));
+    }
+    private ConditionNode visitCondition(LangParser.ConditionContext ctx)
+    {
+        return new ConditionNode(visitExpr(ctx.left), ctx.t, visitExpr(ctx.right));
+    }
+    private List<Statementable> visitProgram(List<LangParser.StatementContext> ctx)
+    {
+        return ctx.stream().map(this::visitStatement).collect(toList());
+    }
+    private void visitFunctionDeclaration(LangParser.FunctionContext function)
+    {
+        LangParser.VarsContext vars = function.v;
+        List<VariableNode> list = new ArrayList<>();
+        if (vars.var1 != null)
+        {
+            Stream<Token> s = Stream.of(vars.var1);
+            if (vars.var!= null)
+                s = Stream.concat(s, vars.var.stream());
+            list = s.map(VariableNode::new).collect(toList());
+        }
+        Memory.getGlobalMemory().addFunction(new Function(
+                visitProgram(function.st), list, function.name.getText()
+        ));
+    }
+    private ExpressionNode visitAdd(LangParser.AddContext ctx)
     {
         ExpressionNode left = visitMul(ctx.left);
         for (int i = 0; i < ctx.op.size(); i++) {
             ExpressionNode right = visitMul(ctx.right.get(i));
             String op = ctx.op.get(i).getText();
-            if (op.equals("*"))
-                left = new FunctionNode(PrimitiveFunction.mul, Arrays.asList(left, right));
-            else
-            if (op.equals("/"))
-                left = new FunctionNode(PrimitiveFunction.div, Arrays.asList(left,right));
-            else
-            if (op.equals("%"))
-                left = new FunctionNode(PrimitiveFunction.mod, Arrays.asList(left,right));
-            else
-                throw new RuntimeException("Unidentified symbol: "+ctx.op.get(i));
+            switch (op) {
+                case "*":
+                    left = new FunctionNode(PrimitiveFunction.mul, Arrays.asList(left, right));
+                    break;
+                case "/":
+                    left = new FunctionNode(PrimitiveFunction.div, Arrays.asList(left, right));
+                    break;
+                case "%":
+                    left = new FunctionNode(PrimitiveFunction.mod, Arrays.asList(left, right));
+                    break;
+                default:
+                    throw new RuntimeException("Unidentified symbol: " + ctx.op.get(i));
+            }
         }
         return left;
     }
-    private static ConditionBlockNode visitCondition(LangParser.If_blockContext context)
-    {
-        ConditionNode conditionNode = visitCondition(context.cond);
-        System.out.println(context.else_st.size());
-        List<StatementNode> elseBody = context.else_st == null? null: visitForList(context.else_st, Runner::visitStatement);
-        return new ConditionBlockNode(conditionNode, visitForList(context.if_st, Runner::visitStatement), elseBody);
-    }
-    private static void compile(LangParser.StatementContext c)
-    {
-        visitStatement(c).execute(variables);
-    }
 
-    private static <T,E> List<E> visitForList(List<T> list, java.util.function.Function<T,E> function)
-    {
-        return list.stream().map(function).collect(Collectors.toList());
-    }
     public static void run(String code)
     {
+        new Runner(code);
+    }
+    private Runner(String code)
+    {
+        Memory.init();
+
         LangLexer lexer = new LangLexer(CharStreams.fromString(code));
         LangParser p = new LangParser(new CommonTokenStream(lexer));
         LangParser.ProgramContext context = p.program();
-        initFunctions();
-        //System.out.println(context.st.size());
         context.st.forEach(st-> System.out.println(st.getText()));
-        context.f.forEach(Runner::visitFunctionDeclaration);
-        context.st.forEach(Runner::compile);
+        context.f.forEach(this::visitFunctionDeclaration);
+        program = visitProgram(context.st);
+        Stack<Memory> stack = new Stack<>();
+        stack.push(Memory.getGlobalMemory());
+        program.stream().map(s->s.execute(stack)).filter(state -> state.getClass() == ReturnedState.class).findFirst();
+        Memory.destroy();
     }
 }

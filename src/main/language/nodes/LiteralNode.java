@@ -1,30 +1,35 @@
 package main.language.nodes;
 
-import main.language.misc.VariablesPool;
+import main.language.mem.Memory;
+import main.language.nodes.interfaces.ExpressionNode;
 import main.language.types.AbstractType;
 import main.language.types.DoubleType;
 import main.language.types.IntegerType;
 import main.language.types.StringType;
 import org.antlr.v4.runtime.Token;
 
-public class LiteralNode extends ExpressionNode {
+import java.util.Stack;
 
-    public LiteralNode(Token t)
+public class LiteralNode implements ExpressionNode {
+    private Token token;
+
+    public LiteralNode(Token token)
     {
-        super(t);
+        this.token = token;
     }
     @Override
-    public AbstractType<?> eval(VariablesPool pool) {
-        if (t.getText().contains("\""))
-            return new StringType(t.getText().substring(1, t.getText().length()-1));
+    public AbstractType<?> eval(Stack<Memory> memoryStack) {
+        if (token.getText().contains("\""))
+            return new StringType(token.getText().substring(1, token.getText().length()-1));
         else
-            return t.getText().contains(".")? new DoubleType(Double.parseDouble(t.getText())):
-                new IntegerType(Integer.parseInt(t.getText()));
+            return token.getText().contains(".")? new DoubleType(Double.parseDouble(token.getText())):
+                new IntegerType(Integer.parseInt(token.getText()));
     }
+    
 
     @Override
     public String toString() {
-        return t.getText();
+        return token.getText();
     }
 
 }

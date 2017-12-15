@@ -1,17 +1,16 @@
 package main.language.nodes;
 
 import main.language.Function;
-import main.language.Runner;
-import main.language.misc.VariablesPool;
+import main.language.mem.Memory;
+import main.language.nodes.interfaces.ExpressionNode;
 import main.language.types.AbstractType;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
-public class FunctionNode extends ExpressionNode{
+public class FunctionNode implements ExpressionNode {
     private Function function;
     private List<ExpressionNode> arguments;
 
@@ -22,9 +21,10 @@ public class FunctionNode extends ExpressionNode{
 
 
     @Override
-    public AbstractType<?> eval(VariablesPool pool)
+    public AbstractType<?> eval(Stack<Memory> memoryStack)
     {
-        return function.executeFor(arguments.stream().map(node-> node.eval(pool)).collect(toList()));
+        // TODO: 15.12.2017  
+        return function.executeFor(arguments.stream().map(node->node.eval(memoryStack)).collect(toList()));
     }
 
     @Override

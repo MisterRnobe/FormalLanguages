@@ -2,19 +2,11 @@ package main.language.functions;
 
 import main.gui.ApplicationController;
 import main.language.Function;
-import main.language.Runner;
-import main.language.nodes.ExpressionNode;
-import main.language.nodes.StatementNode;
-import main.language.nodes.VariableNode;
+import main.language.mem.Memory;
 import main.language.types.AbstractType;
 import main.language.types.DoubleType;
 import main.language.types.IntegerType;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenSource;
 
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -95,9 +87,10 @@ public class Functions {
         public AbstractType<?> executeFor(List<AbstractType<?>> values) {
             if (values.size()!= 1 | values.get(0).getType()!= AbstractType.Type.INTEGER)
                 throw new RuntimeException("Wrong argument(s)!");
+            if (values.get(0).getType()!= AbstractType.Type.INTEGER)
+                throw new RuntimeException("Size must be INTEGER! Found "+values.get(0).getType());
             int size = ((IntegerType)values.get(0)).getValue();
-
-            return super.executeFor(values);
+            return new IntegerType(Memory.getGlobalMemory().allocate(size));
         }
     }
 }
